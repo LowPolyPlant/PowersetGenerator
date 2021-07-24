@@ -12,7 +12,7 @@ var max_ps = 9;
 var g_setsize = 1; 
 var justification = true;
 var lines = true;
-var simple = true; 
+var simple = false; 
 var colorIndex = 0;
 var colorSchemeList = [
     {reference: d3.interpolateRainbow, name: "Rainbow"}, 

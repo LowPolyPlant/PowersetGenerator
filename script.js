@@ -12,6 +12,7 @@ var max_ps = 9;
 var g_setsize = 1; 
 var justification = true;
 var lines = true;
+var color = true; 
 var colorIndex = 0;
 var colorSchemeList = [
     {reference: d3.interpolateRainbow, name: "Rainbow"}, 
@@ -157,25 +158,39 @@ function drawSubsetsCenter(size){
     for(let setSize = 0; setSize < data.length; setSize++){  // this iterates through the set of sets of different sizes
         let setsOfSizeN = data[setSize];                     // all the sets of some size N
         let ypos = yScale(setSize);                          // the current y position we will place these
-        let yBox = svg.append("g")
-            .attr("transform", `translate(0, ${ypos})`);
-       // let yBox = svg.append("g")
-         //   .attr("transform", `translate(${(largestxScale(largestNumX-1)-largestxScale(setsOfSizeN.length-1))/2}, ${ypos})`);
-        let xScale = d3.scalePoint()
-            .domain(d3.range(0,setsOfSizeN.length))
-            .range([(largestxScale(largestNumX-1)-largestxScale(setsOfSizeN.length-1))/2 + r, 
-                (largestxScale(largestNumX-1)+largestxScale(setsOfSizeN.length-1))/2]);
-        for(let subsetIndex = 0; subsetIndex < setsOfSizeN.length; subsetIndex++){
-            let subset = setsOfSizeN[subsetIndex]; 
-            let elementContainer = yBox.append("g")
-                .attr("transform", `translate(${xScale(subsetIndex)}, 0)`);
-            if(setSize == 0){
-                drawEmptyCenter(elementContainer, r);
+        if(color){
+            let yBox = svg.append("g")
+                .attr("transform", `translate(0, ${ypos})`);
+            let xScale = d3.scalePoint()
+                .domain(d3.range(0,setsOfSizeN.length))
+                .range([(largestxScale(largestNumX-1)-largestxScale(setsOfSizeN.length-1))/2 + r, 
+                    (largestxScale(largestNumX-1)+largestxScale(setsOfSizeN.length-1))/2]);
+            for(let subsetIndex = 0; subsetIndex < setsOfSizeN.length; subsetIndex++){
+                let subset = setsOfSizeN[subsetIndex]; 
+                let elementContainer = yBox.append("g")
+                    .attr("transform", `translate(${xScale(subsetIndex)}, 0)`);
+                if(setSize == 0){
+                    drawEmptyCenter(elementContainer, r);
+                }
+                drawElements(subset, elementContainer, r);
             }
-            drawElements(subset, elementContainer, r);
+            if(setSize > 0 && lines)
+                    drawLines(size, setSize, data, largestxScale, yScale,true);
         }
-        if(setSize > 0 && lines)
-                drawLines(size, setSize, data, largestxScale, yScale,true);
+        else{
+            let g = svg.append("g")
+                .attr("transform", `translate(${(largestxScale(largestNumX-1)-largestxScale(setsOfSizeN.length-1))/2}, ${ypos})`);
+            let xScale = d3.scalePoint()
+                .domain(d3.range(0,setsOfSizeN.length))
+                .range([largestxScale(0), largestxScale(setsOfSizeN.length-1)]);
+            setsOfSizeN.forEach(function(d, i){
+                g.append("circle")
+                .attr("r", r)
+                .attr("cy", 0)
+                .attr("cx", xScale(i))
+                .attr("fill", "#000000");
+            });
+        }
     }
 }
 
@@ -198,18 +213,28 @@ function drawSubsetsLeft(size){
         let xScale = d3.scalePoint()
             .domain(d3.range(0,setsOfSizeN.length))
             .range([largestxScale(0), largestxScale(setsOfSizeN.length-1)]);
-        
-        for(let subsetIndex = 0; subsetIndex < setsOfSizeN.length; subsetIndex++){
-            let subset = setsOfSizeN[subsetIndex];
-            let elementContainer = yBox.append("g")
-                .attr("transform", `translate(${xScale(subsetIndex)}, 0)`);
-            if(setSize == 0){
-                drawEmptyCenter(elementContainer, r);
-            }   
-            drawElements(subset, elementContainer, r);
+        if(color){
+            for(let subsetIndex = 0; subsetIndex < setsOfSizeN.length; subsetIndex++){
+                let subset = setsOfSizeN[subsetIndex];
+                let elementContainer = yBox.append("g")
+                    .attr("transform", `translate(${xScale(subsetIndex)}, 0)`);
+                if(setSize == 0){
+                    drawEmptyCenter(elementContainer, r);
+                }   
+                drawElements(subset, elementContainer, r);
+            }
+            if(setSize > 0 && lines)
+                    drawLines(size,setSize,data,largestxScale,yScale,false);
         }
-        if(setSize > 0 && lines)
-                drawLines(size,setSize,data,largestxScale,yScale,false);
+        else {
+            setsOfSizeN.forEach(function(d, i){
+                g.append("circle")
+                    .attr("r", r)
+                    .attr("cy", 0)
+                    .attr("cx", xScale(i))
+                    .attr("fill", "#000000");
+        });
+        }
     }
 }
 function drawLines(size, setSize, data, largestxScale, yScale, isCenter){
